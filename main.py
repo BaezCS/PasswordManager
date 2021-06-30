@@ -2,9 +2,16 @@
 
 
 import datetime
+import hashlib
+import os
 
 entries = []
 
+global currentUname
+global currentPass
+
+currentUname = open("uname.txt")
+currentPass = open("pass.txt")
 
 class entry():
   
@@ -38,6 +45,35 @@ def writeNote():
   entries.append(newNote)
 
 
+def changePass():
+    selection = input("Do you want to change your username or password? 1 for Username, 2 for Password.\n")
+    if selection.isdigit():
+        sel = int(selection)
+        if sel == 1:
+            newUname = input("enter a new username\n")
+            if hashlib.sha256(newUname.encode()).hexdigest() != currentUname.read():
+                file = open('uname.txt', 'w')
+                file.write(hashlib.sha256((newUname).encode()).hexdigest())
+                file.close()
+                print("Done, your new username is: " + newUname)
+        elif sel == 2:
+            newPass = input("enter a new password\n")
+            if hashlib.sha256(newPass.encode()).hexdigest() != currentPass.read():
+                file = open('pass.txt', 'w')
+                file.write(hashlib.sha256((newPass).encode()).hexdigest())
+                file.close()
+                print("Done, your new password is: " + newPass)
+        else:
+            print("invalid: try again")
+            changePass()
+    else:
+        print("invalid: try again")
+        changePass()
+
+    menu()
+
+    
+
 
 def menu():
   exit = True
@@ -45,6 +81,7 @@ def menu():
     print("Choose:")
     print("1.Read Notes")
     print("2.Write Note")
+    print("3. Change Username/Password")
     selection = input("Number Option")
     if(selection.isdigit()):
       selection=int(selection)
@@ -69,17 +106,17 @@ def menu():
         else: print ("No notes stored")
       if selection == 2:
         writeNote()
+      elif selection == 3:
+          changePass()
       
 
 def authenticate():
   Uname = input("Please Enter User Name\n")    
   PassWord = input("Please Enter User Password\n")  
-  Uname = Uname+PassWord
-  UnameAscciiSum = 0
-  for letter in Uname:
-    UnameAscciiSum+=ord(letter)  
-  if UnameAscciiSum > 1200 and Uname[0] == "a":
-    print(UnameAscciiSum) 
+  UnameEncrypt = hashlib.sha256(Uname.encode()).hexdigest()
+  PassEncrypt = hashlib.sha256(PassWord.encode()).hexdigest()
+  if UnameEncrypt == currentUname.read() and PassEncrypt == currentPass.read():
+    print("entered")
     return True
 
 while(True):
